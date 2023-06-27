@@ -5,11 +5,13 @@ export default function AppFunctional(props) {
   const initialEmail = '';
   const initialSteps = 0;
   const initialIndex = 4;
+  const initialErr = ''
 
   const [index, setIndex] = useState(initialIndex);
   const [steps, setSteps] = useState(initialSteps);
   const [message, setMessage] = useState(initialMessage);
   const [email, setEmail] = useState(initialEmail);
+  
 
   function getXY() {
     const x = (index % 3) + 1;
@@ -29,10 +31,12 @@ export default function AppFunctional(props) {
     setEmail(initialEmail);
   }
 
+
+
   function getNextIndex(direction) {
     let x = index % 3;
     let y = Math.floor(index / 3);
-
+  
     switch (direction) {
       case 'left':
         x = Math.max(x - 1, 0);
@@ -49,9 +53,15 @@ export default function AppFunctional(props) {
       default:
         break;
     }
-
+  
+    if (x === index % 3 && y === Math.floor(index / 3)) {
+      setMessage(`You can't go ${direction}`);
+      return index;
+    }
+  
     return y * 3 + x;
   }
+  
 
   function move(evt) {
     const direction = evt.target.id;
@@ -68,6 +78,18 @@ export default function AppFunctional(props) {
 
   function onSubmit(evt) {
     evt.preventDefault();
+
+    if (!email.trim()) {
+      setMessage('Ouch: email is required');
+      return;
+    }
+
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!isValidEmail) {
+      setMessage('Ouch: email must be a valid email');
+      return;
+    }
 
     const payload = {
       x: getXY().x,
@@ -95,13 +117,15 @@ export default function AppFunctional(props) {
         setMessage('An error occurred while submitting the form.');
         console.error(error);
       });
+      {message && <p className="ouch">{message}</p>}
+      setEmail('')
   }
 
   return (
     <div id="wrapper" className={props.className}>
       <div className="info">
         <h3 id="coordinates">{getXYMessage()}</h3>
-        <h3 id="steps">You moved {steps} times</h3>
+        <h3 id="steps">You moved {steps} {steps === 1 ? 'time' : 'times'}</h3>
       </div>
       <div id="grid">
         {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
@@ -114,19 +138,19 @@ export default function AppFunctional(props) {
         <h3 id="message">{message}</h3>
       </div>
       <div id="keypad">
-        <button id="left" onClick={move}>
+        <button  data-testid='left' id="left" onClick={move}>
           LEFT
         </button>
-        <button id="up" onClick={move}>
+        <button  data-testid="up" id="up" onClick={move}>
           UP
         </button>
-        <button id="right" onClick={move}>
+        <button data-testid='right' id="right" onClick={move}>
           RIGHT
         </button>
-        <button id="down" onClick={move}>
+        <button  data-testid='down' id="down" onClick={move}>
           DOWN
         </button>
-        <button id="reset" onClick={reset}>
+        <button  id="reset" onClick={reset}>
           reset
         </button>
       </div>
